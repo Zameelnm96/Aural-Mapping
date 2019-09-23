@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         else{
-            AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
+           /* AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
             alertDialog.setTitle("Confirm Location");
             alertDialog.setMessage("Your Location is enabled, please enjoy");
             alertDialog.setNegativeButton("Back to interface",new DialogInterface.OnClickListener(){
@@ -66,13 +66,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             AlertDialog alert=alertDialog.create();
-            alert.show();
+            alert.show();*/
             return true;
         }
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        isLocationEnabled();
-    }
+
 }

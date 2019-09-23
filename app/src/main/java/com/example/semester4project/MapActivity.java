@@ -1,18 +1,13 @@
 package com.example.semester4project;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -51,25 +46,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final double sensor2Longi = 80.111980;
     private static int dangerZoneRadSensor1 ;
 
-    static MapActivity instance;
-    private DatabaseReference databaseReference1;
 
-    public static MapActivity getInstance(){
-        return instance;
-    }
+
+
+
 
     GoogleMap map;// this the map we going to edit
 
     LocationManager locationManager;
-    Context mContext;
+
 
     Location currentLoc;
     Circle currentLocCircle;// we can use this for removing the circle
-    double preLati,preLogi;
+    double preLati,preLogi;// this variable save previous status before change
 
 
     FusedLocationProviderClient fusedLocationProviderClient;//FusedLocationProviderClient is for interacting with
-    private LatLng currentLatLang;// THIS CONTOINS CURRENT COORDINATES
+    private LatLng currentLatLang;// THIS CONTAINS CURRENT COORDINATES
 
     // the location using fused location provider.
     // just commented for check
@@ -78,58 +71,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Circle circleSensor1,circleSensor2;//later we can remove circles using this
     private Marker markerSensor1,markerSensor2;
 
-
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map);
-
-        databaseReference = FirebaseDatabase.getInstance().getReference("Datas");
-
-        databaseReference1 = FirebaseDatabase.getInstance().getReference("Datas");
-        databaseReference1.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("radius").getValue()).intValue();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        instance = this;
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, getPendingIntent() );
-
-        //REQUEST PERMISSION TO ACESS LOCATION
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                    LOCATION_REQUEST_CODE);//the automatically onreques permission will call
-
-        } else {
-            fetchLastLocation();
-        }
-        //we have to override onRequestPermissionResult method
-        mContext=this;
-        locationManager=(LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
-                2000,
-                1, locationListenerGPS);
-        //isLocationEnabled();
-
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //isLocationEnabled();
-    }
-
+    //this will run location change by 1m and update in 2s. 1m and 2s mention above.
     LocationListener locationListenerGPS=new LocationListener() {
         @Override
         public void onLocationChanged(android.location.Location location) {
@@ -138,10 +80,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             double distance =  DistanceCalculator.distance(sensor1Lati,latitude,sensor2Longi,longitude,0,0); //gives the distance changed
             preLati = latitude;
             preLogi = longitude;
-            String msg="New Latitude: "+latitude + "New Longitude: "+longitude;
+            // String msg="New Latitude: "+latitude + "New Longitude: "+longitude;
 
             if (distance <= dangerZoneRadSensor1)
-            Toast.makeText(mContext,"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards" ,Toast.LENGTH_LONG).show();
+                Toast.makeText(MapActivity.this,"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards" ,Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -159,12 +101,58 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         }
     };
+    //
+
+
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_map);
+
+        databaseReference = FirebaseDatabase.getInstance().getReference("Datas");
+
+        //this is only for get value of dangerZoneRadSensor1.
+        // below again addValueEventLister added
+        databaseReference.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("radius").getValue()).intValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
 
 
-    private PendingIntent getPendingIntent() {
-        return null;
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+
+        //REQUEST PERMISSION TO ACCESS LOCATION
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_REQUEST_CODE);//the automatically onreques permission will call
+
+        } else {
+            fetchLastLocation(); //we have to override onRequestPermissionResult method
+        }
+
+
+        locationManager=(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
+                2000,
+                1, locationListenerGPS);
+        //isLocationEnabled();
+
+
     }
+
+
+
 
     //This methodccalled after requestPermission method called
     @Override
@@ -178,7 +166,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 break;
         }
     }
-    //
+
+
+    //currentLoc will intialize here
     private void fetchLastLocation() {
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         Toast.makeText(MapActivity.this,"fetchLastLocation method 2",Toast.LENGTH_SHORT).show();
@@ -189,7 +179,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 preLati = currentLoc.getLatitude();
                 preLogi = currentLoc.getLongitude();
 
-                //Toast.makeText(getApplicationContext(),currentLoc.getLatitude() + ","+ currentLoc.getLongitude(),Toast.LENGTH_SHORT).show();
+
                 SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().
                         findFragmentById(R.id.map);
 
@@ -208,6 +198,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         });
     }
+    //
 
     //here is the method of OnMapReadyCallback interFace
     @Override
@@ -309,57 +300,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return splitList;
     }
 
-    private void updateLocation(){
-        buildLocationRequest();
-    }
-
-    private void buildLocationRequest() {
-        locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(5000);
-        locationRequest.setFastestInterval(3000);
-        locationRequest.setSmallestDisplacement(10f);
-
-    }
-    public void makeToast(String value){
-        Toast.makeText(MapActivity.this,"" + value,Toast.LENGTH_SHORT);
-    }
 
 
-   /* private boolean isLocationEnabled() {
 
-        if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-            AlertDialog.Builder alertDialog=new AlertDialog.Builder(mContext);
-            alertDialog.setTitle("Enable Location");
-            alertDialog.setMessage("Your locations setting is not enabled. Please enabled it in settings menu.");
-            alertDialog.setPositiveButton("Location Settings", new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialog, int which){
-                    Intent intent=new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivity(intent);
-                }
-            });
-            alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialog, int which){
-                    dialog.cancel();
-                }
-            });
-            AlertDialog alert=alertDialog.create();
-            alert.show();
-            return false;
-        }
-        else{
-            AlertDialog.Builder alertDialog=new AlertDialog.Builder(mContext);
-            alertDialog.setTitle("Confirm Location");
-            alertDialog.setMessage("Your Location is enabled, please enjoy");
-            alertDialog.setNegativeButton("Back to interface",new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialog, int which){
-                    dialog.cancel();
-                }
-            });
-            AlertDialog alert=alertDialog.create();
-            alert.show();
-            return true;
-        }
-    }*/
+   // earlier here had method call isLocationEnabled() now it in Main Activity.
 }
 
