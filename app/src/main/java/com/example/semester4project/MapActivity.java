@@ -96,8 +96,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         locationManager=(LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
                 2000,
-                10, locationListenerGPS);
-        isLocationEnabled();
+                1, locationListenerGPS);
+        //isLocationEnabled();
 
 
     }
@@ -105,7 +105,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onResume() {
         super.onResume();
-        isLocationEnabled();
+        //isLocationEnabled();
     }
 
     LocationListener locationListenerGPS=new LocationListener() {
@@ -294,7 +294,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-    private void isLocationEnabled() {
+   /* private boolean isLocationEnabled() {
 
         if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
             AlertDialog.Builder alertDialog=new AlertDialog.Builder(mContext);
@@ -313,6 +313,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             });
             AlertDialog alert=alertDialog.create();
             alert.show();
+            return false;
         }
         else{
             AlertDialog.Builder alertDialog=new AlertDialog.Builder(mContext);
@@ -325,7 +326,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             });
             AlertDialog alert=alertDialog.create();
             alert.show();
+            return true;
         }
-    }
+    }*/
 }
 
