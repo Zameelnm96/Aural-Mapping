@@ -47,6 +47,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     LocationRequest locationRequest;
 
+    private static final double sensor1Lati = 7.095764;
+    private static final double sensor2Longi = 80.111980;
+    private static int dangerZoneRadSensor1 ;
+
     static MapActivity instance;
     public static MapActivity getInstance(){
         return instance;
@@ -76,6 +80,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+
 
         instance = this;
 
@@ -114,11 +120,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onLocationChanged(android.location.Location location) {
             double latitude=location.getLatitude();
             double longitude=location.getLongitude();
-            double distance =  DistanceCalculator.distance(latitude,preLati,longitude,preLogi,0,0); //gives the distance changed
+            double distance =  DistanceCalculator.distance(sensor1Lati,latitude,sensor2Longi,longitude,0,0); //gives the distance changed
             preLati = latitude;
             preLogi = longitude;
             String msg="New Latitude: "+latitude + "New Longitude: "+longitude;
-            Toast.makeText(mContext,msg+ " distance is " + distance,Toast.LENGTH_LONG).show();
+
+            Toast.makeText(mContext," distance is " + distance,Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -201,7 +208,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         currentLocCircle = map.addCircle( getCircleOption(currentLatLang,300, Color.WHITE));// add circle with 300m radius
 
         //after map assign we are going to do database work here
-        databaseReference = FirebaseDatabase.getInstance().getReference("Datas");//hierarchy is on top Datas there
+        //hierarchy is on top Datas there
         //after that Sensor name comes, each sensor child contains two values location and radius
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
