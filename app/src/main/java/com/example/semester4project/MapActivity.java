@@ -52,6 +52,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static int dangerZoneRadSensor1 ;
 
     static MapActivity instance;
+    private DatabaseReference databaseReference1;
+
     public static MapActivity getInstance(){
         return instance;
     }
@@ -81,7 +83,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        databaseReference = FirebaseDatabase.getInstance().getReference("Datas");
 
+        databaseReference1 = FirebaseDatabase.getInstance().getReference("Datas");
+        databaseReference1.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("radius").getValue()).intValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         instance = this;
 
@@ -125,7 +140,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             preLogi = longitude;
             String msg="New Latitude: "+latitude + "New Longitude: "+longitude;
 
-            Toast.makeText(mContext," distance is " + distance,Toast.LENGTH_LONG).show();
+            if (distance <= dangerZoneRadSensor1)
+            Toast.makeText(mContext,"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards" ,Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -237,6 +253,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         // Marker object
                         int radius = ((Long)postSnapshot.child("radius").getValue()).intValue();//radius is in long we haveto
                         // convert it into int
+                        dangerZoneRadSensor1 = radius;
                         circleSensor1 = map.addCircle(getCircleOption(latLng,radius,Color.GREEN));//draw the circle on map added
                         // into Circle object
                     }
