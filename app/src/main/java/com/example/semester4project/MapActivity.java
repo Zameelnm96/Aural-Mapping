@@ -33,6 +33,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = "MapActivity";
@@ -42,6 +44,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     Location currentLoc;
     Circle currentLocCircle;// we can use this for removing the circle
+
+    public static MapActivity obj;
+    Timer timer;
+    TimerTask task;
+
+
 
 
     FusedLocationProviderClient fusedLocationProviderClient;//FusedLocationProviderClient is for interacting with
@@ -53,11 +61,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private DatabaseReference databaseReference;// using this refernce only we are going to retreive data
     private Circle circleSensor1,circleSensor2;//later we can remove circles using this
     private Marker markerSensor1,markerSensor2;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
 
+        obj = this;
+
+        timer = new Timer();
+
+        // creating an instance of task to be scheduled
+        task = new Helper();
+
+        // scheduling the timer instance
+        timer.schedule(task, 1000, 3000);
+        task.scheduledExecutionTime();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
