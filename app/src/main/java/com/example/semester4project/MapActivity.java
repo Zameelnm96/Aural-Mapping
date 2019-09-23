@@ -1,11 +1,18 @@
 package com.example.semester4project;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -47,6 +54,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     GoogleMap map;// this the map we going to edit
 
+    LocationManager locationManager;
+    Context mContext;
+
     Location currentLoc;
     Circle currentLocCircle;// we can use this for removing the circle
 
@@ -82,10 +92,48 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             fetchLastLocation();
         }
         //we have to override onRequestPermissionResult method
-
+        mContext=this;
+        locationManager=(LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
+                2000,
+                10, locationListenerGPS);
+        isLocationEnabled();
 
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isLocationEnabled();
+    }
+
+    LocationListener locationListenerGPS=new LocationListener() {
+        @Override
+        public void onLocationChanged(android.location.Location location) {
+            double latitude=location.getLatitude();
+            double longitude=location.getLongitude();
+            String msg="New Latitude: "+latitude + "New Longitude: "+longitude;
+            Toast.makeText(mContext,msg,Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+
+
 
     private PendingIntent getPendingIntent() {
         return null;
@@ -244,4 +292,40 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void makeToast(String value){
         Toast.makeText(MapActivity.this,"" + value,Toast.LENGTH_SHORT);
     }
+
+
+    private void isLocationEnabled() {
+
+        if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            AlertDialog.Builder alertDialog=new AlertDialog.Builder(mContext);
+            alertDialog.setTitle("Enable Location");
+            alertDialog.setMessage("Your locations setting is not enabled. Please enabled it in settings menu.");
+            alertDialog.setPositiveButton("Location Settings", new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    Intent intent=new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            });
+            alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    dialog.cancel();
+                }
+            });
+            AlertDialog alert=alertDialog.create();
+            alert.show();
+        }
+        else{
+            AlertDialog.Builder alertDialog=new AlertDialog.Builder(mContext);
+            alertDialog.setTitle("Confirm Location");
+            alertDialog.setMessage("Your Location is enabled, please enjoy");
+            alertDialog.setNegativeButton("Back to interface",new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    dialog.cancel();
+                }
+            });
+            AlertDialog alert=alertDialog.create();
+            alert.show();
+        }
+    }
 }
+
