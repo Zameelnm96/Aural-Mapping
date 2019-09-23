@@ -211,8 +211,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         //map.moveCamera(CameraUpdateFactory.newLatLng(currentLatLang));
        // map.animateCamera(CameraUpdateFactory.newLatLng(currentLatLang));
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang,13));//zoom to current location animation
-        map.addMarker(new MarkerOptions().position(currentLatLang).title("You are here"));
-        currentLocCircle = map.addCircle( getCircleOption(currentLatLang,300, Color.WHITE));// add circle with 300m radius
+        //map.addMarker(new MarkerOptions().position(currentLatLang).title("You are here"));
+
 
         //after map assign we are going to do database work here
         //hierarchy is on top Datas there
@@ -258,6 +258,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         circleSensor2 = map.addCircle(getCircleOption(latLng,radius,Color.BLACK));
                     }
                 }
+
+                double latitude=currentLoc.getLatitude();
+                double longitude=currentLoc.getLongitude();
+                double distance =  DistanceCalculator.distance(sensor1Lati,latitude,sensor2Longi,longitude,0,0); //gives the distance changed
+                preLati = latitude;
+                preLogi = longitude;
+                // String msg="New Latitude: "+latitude + "New Longitude: "+longitude;
+
+                if (distance <= dangerZoneRadSensor1)
+                    Toast.makeText(MapActivity.this,"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards" ,Toast.LENGTH_LONG).show();
+
             }
 
             @Override
