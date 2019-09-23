@@ -59,6 +59,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     Location currentLoc;
     Circle currentLocCircle;// we can use this for removing the circle
+    double preLati,preLogi;
 
 
     FusedLocationProviderClient fusedLocationProviderClient;//FusedLocationProviderClient is for interacting with
@@ -113,8 +114,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onLocationChanged(android.location.Location location) {
             double latitude=location.getLatitude();
             double longitude=location.getLongitude();
+            double distance =  DistanceCalculator.distance(latitude,preLati,longitude,preLogi,0,0); //gives the distance changed
+            preLati = latitude;
+            preLogi = longitude;
             String msg="New Latitude: "+latitude + "New Longitude: "+longitude;
-            Toast.makeText(mContext,msg,Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext,msg+ " distance is " + distance,Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -159,6 +163,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onSuccess(Location location) {
                 currentLoc = location;
+                preLati = currentLoc.getLatitude();
+                preLogi = currentLoc.getLongitude();
 
                 //Toast.makeText(getApplicationContext(),currentLoc.getLatitude() + ","+ currentLoc.getLongitude(),Toast.LENGTH_SHORT).show();
                 SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().
@@ -186,6 +192,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         map = googleMap;
         map.setMyLocationEnabled(true);
         currentLatLang = new LatLng(currentLoc.getLatitude(),currentLoc.getLongitude());
+        preLati = currentLoc.getLatitude();
+        preLogi = currentLoc.getLongitude();
         //map.moveCamera(CameraUpdateFactory.newLatLng(currentLatLang));
        // map.animateCamera(CameraUpdateFactory.newLatLng(currentLatLang));
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang,13));//zoom to current location animation
