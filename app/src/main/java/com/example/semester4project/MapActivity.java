@@ -1,10 +1,7 @@
 package com.example.semester4project;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -13,6 +10,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,24 +30,25 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Iterator;
-import java.util.Timer;
-import java.util.TimerTask;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = "MapActivity";
     private final int LOCATION_REQUEST_CODE = 100;
 
+    LocationRequest locationRequest;
+
+    static MapActivity instance;
+    public static MapActivity getInstance(){
+        return instance;
+    }
+
     GoogleMap map;// this the map we going to edit
 
     Location currentLoc;
     Circle currentLocCircle;// we can use this for removing the circle
-
-    public static MapActivity obj;
-    Timer timer;
-    TimerTask task;
-
-
 
 
     FusedLocationProviderClient fusedLocationProviderClient;//FusedLocationProviderClient is for interacting with
@@ -62,23 +61,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Circle circleSensor1,circleSensor2;//later we can remove circles using this
     private Marker markerSensor1,markerSensor2;
 
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-
-        obj = this;
-
-        timer = new Timer();
-
-        // creating an instance of task to be scheduled
-        task = new Helper();
-
-        // scheduling the timer instance
-        timer.schedule(task, 1000, 3000);
-        task.scheduledExecutionTime();
+        instance = this;
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, getPendingIntent() );
 
         //REQUEST PERMISSION TO ACESS LOCATION
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -95,6 +86,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     }
+
+    private PendingIntent getPendingIntent() {
+        return null;
+    }
+
     //This methodccalled after requestPermission method called
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -231,5 +227,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         String line1 = string.replace("\"", "");
         String[] splitList = line1.split(",");
         return splitList;
+    }
+
+    private void updateLocation(){
+        buildLocationRequest();
+    }
+
+    private void buildLocationRequest() {
+        locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(5000);
+        locationRequest.setFastestInterval(3000);
+        locationRequest.setSmallestDisplacement(10f);
+
+    }
+    public void makeToast(String value){
+        Toast.makeText(MapActivity.this,"" + value,Toast.LENGTH_SHORT);
     }
 }
