@@ -72,18 +72,53 @@ public class GPS_Service extends Service {
             }
         });
         Log.i("GPS_Service", "onCreateMethod running");
+        if (listener != null) {
+            locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+            //noinspection MissingPermission
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, listener);// So our on location change method will run every 3 second because of
+            // we made min distance is zero.
+
+            notificationManagerCompat = NotificationManagerCompat.from(this);
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(locationManager != null){
+            //noinspection MissingPermission
+            locationManager.removeUpdates(listener);
+        }
+        sendBroadcast(new Intent("YouWillNeverKillMe"));
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public int onStartCommand(Intent intent, final int flags, int startId) {
+
+        Log.i("GPS_Service", "onStartCommand");
+
+
+        //startForeground(NOTIFICATION_ID, notification);
         listener = new LocationListener() {
             @Override
-            public void onLocationChanged(Location location) {
+            public void onLocationChanged(Location location) { // this will run every 3 second because we made minimum distance as 0m
                 Intent i = new Intent("location_update");
                 i.putExtra("coordinates",location.getLongitude()+" "+location.getLatitude());
                 sendBroadcast(i);
                 Log.i("GPS_Service", "onLocationChanged: " + "coordinates"+location.getLongitude()+" "+location.getLatitude());
                 double distance =  DistanceCalculator.distance(sensor1Lati,location.getLatitude(),sensor2Longi,+location.getLongitude(),0,0);
-                 if (distance <= dangerZoneRadSensor1)
+                if (distance <= dangerZoneRadSensor1){
+                    addNotification();
+                    //startForeground(NOTIFICATION_ID, notification);
+                    Log.i("GPS_Service", "onLocationChanged: " +"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards");
+                }
+                else{
 
-                     Log.i("GPS_Service", "onLocationChanged: " +"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards");
-
+                    notificationManagerCompat.cancel(NOTIFICATION_ID);
+                }
             }
 
             @Override
@@ -104,31 +139,15 @@ public class GPS_Service extends Service {
             }
         };
 
-        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        if (listener != null) {
+            locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
-        //noinspection MissingPermission
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,listener);
-
-        notificationManagerCompat = NotificationManagerCompat.from(this);
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if(locationManager != null){
             //noinspection MissingPermission
-            locationManager.removeUpdates(listener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, listener);
+
+            notificationManagerCompat = NotificationManagerCompat.from(this);
         }
-        sendBroadcast(new Intent("YouWillNeverKillMe"));
-    }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
-        Log.i("GPS_Service", "onStartCommand");
-        addNotification();
-        startForeground(NOTIFICATION_ID, notification);
         return START_STICKY;
     }
 
@@ -144,7 +163,7 @@ public class GPS_Service extends Service {
         // create the notification
         Notification.Builder m_notificationBuilder = new Notification.Builder(this)
                 .setContentTitle("GPS_Service")
-                .setContentText("service_status_monitor")
+                .setContentText("You are in dangerzone")
                 .setSmallIcon(R.drawable.notification_small_icon);
 
         // create the pending intent and add to the notification
