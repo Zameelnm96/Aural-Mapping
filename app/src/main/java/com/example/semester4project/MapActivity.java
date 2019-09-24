@@ -1,7 +1,10 @@
 package com.example.semester4project;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -46,9 +49,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final double sensor2Longi = 80.111980;
     private static int dangerZoneRadSensor1 ;
 
-
-
-
+    private BroadcastReceiver broadcastReceiver;
 
 
     GoogleMap map;// this the map we going to edit
@@ -72,7 +73,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Marker markerSensor1,markerSensor2;
 
     //this will run location change by 1m and update in 2s. 1m and 2s mention above.
-    LocationListener locationListenerGPS=new LocationListener() {
+    /*LocationListener locationListenerGPS=new LocationListener() {
         @Override
         public void onLocationChanged(android.location.Location location) {
             double latitude=location.getLatitude();
@@ -100,7 +101,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onProviderDisabled(String provider) {
 
         }
-    };
+    };*/
     //
 
 
@@ -124,7 +125,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             }
         });
-
+        Intent i =new Intent(getApplicationContext(),GPS_Service.class);
+        startService(i);
 
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -142,10 +144,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
 
 
-        locationManager=(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        /*locationManager=(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,
                 2000,
-                1, locationListenerGPS);
+                1, locationListenerGPS);*/
         //isLocationEnabled();
 
 
@@ -311,9 +313,31 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return splitList;
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
 
+        if(broadcastReceiver == null){
+            broadcastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
 
+                    Toast.makeText(getApplicationContext(),intent.getExtras().get("coordinates") + "",Toast.LENGTH_SHORT).show();
 
-   // earlier here had method call isLocationEnabled() now it in Main Activity.
+                }
+            };
+        }
+        registerReceiver(broadcastReceiver,new IntentFilter("location_update"));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        /*if(broadcastReceiver != null){
+            unregisterReceiver(broadcastReceiver);
+        }*/
+    }
+
+    // earlier here had method call isLocationEnabled() now it in Main Activity.
 }
 
