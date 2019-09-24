@@ -106,12 +106,13 @@ public class GPS_Service extends Service {
             //noinspection MissingPermission
             locationManager.removeUpdates(listener);
         }
+        sendBroadcast(new Intent("YouWillNeverKillMe"));
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
 
-
+        Log.i("GPS_Service", "onStartCommand");
+        return START_STICKY;
     }
 }

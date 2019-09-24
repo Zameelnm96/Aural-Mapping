@@ -13,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service android:name=".GPS_Service"/>
+        <receiver android:name=".RestartServiceReceiver"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBcZcvBoTY-fuMbEGH4R_ZOZTT6tuMmzUk" />
