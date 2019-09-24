@@ -176,12 +176,7 @@ public class GPS_Service extends Service {
         notificationManagerCompat.notify(NOTIFICATION_ID, m_notificationBuilder.build());
 
     }
-    public void cancelNotification(int id, String tag)
-    {
-        //you can get notificationManager like this:
-        //notificationManage r= (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManagerCompat.cancel(tag, id);
-    }
+
 
 
 
