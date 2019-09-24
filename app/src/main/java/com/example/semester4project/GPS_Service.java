@@ -2,11 +2,14 @@ package com.example.semester4project;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -33,6 +36,9 @@ public class GPS_Service extends Service {
     public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
 
     DatabaseReference  databaseReference;
+
+    Service m_service;
+
 
     @Nullable
     @Override
@@ -115,4 +121,21 @@ public class GPS_Service extends Service {
         Log.i("GPS_Service", "onStartCommand");
         return START_STICKY;
     }
+
+    public class MyBinder extends Binder {
+        public GPS_Service getService() {
+            return GPS_Service.this;
+        }
+    }
+    private ServiceConnection m_serviceConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            m_service = ((GPS_Service.MyBinder)service).getService();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            m_service = null;
+        }
+    };
+
+
 }

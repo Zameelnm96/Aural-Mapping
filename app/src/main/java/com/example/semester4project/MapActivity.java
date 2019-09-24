@@ -2,15 +2,18 @@ package com.example.semester4project;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -104,6 +107,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     };*/
     //
 
+    GPS_Service gps_service;
+    ServiceConnection m_serviceConnection;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,6 +133,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Intent i =new Intent(getApplicationContext(),GPS_Service.class);
         startService(i);
 
+        m_serviceConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                gps_service = ((GPS_Service.MyBinder)service).getService();
+            }
+
+            public void onServiceDisconnected(ComponentName className) {
+                gps_service = null;
+            }
+        };
+        Intent intent = new Intent(this, GPS_Service.class);
+        bindService(intent, m_serviceConnection, BIND_AUTO_CREATE);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
