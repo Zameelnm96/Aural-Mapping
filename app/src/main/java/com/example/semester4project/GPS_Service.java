@@ -1,12 +1,18 @@
 package com.example.semester4project;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -20,17 +26,25 @@ import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
-
+/**
+ * Created by filipp on 6/16/2016.
+ */
 public class GPS_Service extends Service {
 
     private LocationListener listener;
     private LocationManager locationManager;
     public static final double sensor1Lati = 7.095764;
     public static final double sensor2Longi = 80.111980;
-    public static int dangerZoneRadSensor1 ;
+    public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
+    private static final int NOTIFICATION_ID = 101;
+
 
     DatabaseReference  databaseReference;
+
+    Service m_service;
+
 
     @Nullable
     @Override
@@ -58,18 +72,53 @@ public class GPS_Service extends Service {
             }
         });
         Log.i("GPS_Service", "onCreateMethod running");
+        if (listener != null) {
+            locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+            //noinspection MissingPermission
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, listener);// So our on location change method will run every 3 second because of
+            // we made min distance is zero.
+
+            notificationManagerCompat = NotificationManagerCompat.from(this);
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(locationManager != null){
+            //noinspection MissingPermission
+            locationManager.removeUpdates(listener);
+        }
+        sendBroadcast(new Intent("YouWillNeverKillMe"));
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public int onStartCommand(Intent intent, final int flags, int startId) {
+
+        Log.i("GPS_Service", "onStartCommand");
+
+
+        //startForeground(NOTIFICATION_ID, notification);
         listener = new LocationListener() {
             @Override
-            public void onLocationChanged(Location location) {
+            public void onLocationChanged(Location location) { // this will run every 3 second because we made minimum distance as 0m
                 Intent i = new Intent("location_update");
                 i.putExtra("coordinates",location.getLongitude()+" "+location.getLatitude());
                 sendBroadcast(i);
                 Log.i("GPS_Service", "onLocationChanged: " + "coordinates"+location.getLongitude()+" "+location.getLatitude());
                 double distance =  DistanceCalculator.distance(sensor1Lati,location.getLatitude(),sensor2Longi,+location.getLongitude(),0,0);
-                 if (distance <= dangerZoneRadSensor1)
+                if (distance <= dangerZoneRadSensor1){
+                    addNotification();
+                    //startForeground(NOTIFICATION_ID, notification);
+                    Log.i("GPS_Service", "onLocationChanged: " +"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards");
+                }
+                else{
 
-                     Log.i("GPS_Service", "onLocationChanged: " +"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards");
-
+                    notificationManagerCompat.cancel(NOTIFICATION_ID);
+                }
             }
 
             @Override
@@ -90,27 +139,51 @@ public class GPS_Service extends Service {
             }
         };
 
-        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        if (listener != null) {
+            locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
-        //noinspection MissingPermission
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,listener);
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if(locationManager != null){
             //noinspection MissingPermission
-            locationManager.removeUpdates(listener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, listener);
+
+            notificationManagerCompat = NotificationManagerCompat.from(this);
         }
-        sendBroadcast(new Intent("YouWillNeverKillMe"));
-    }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
-        Log.i("GPS_Service", "onStartCommand");
         return START_STICKY;
     }
+
+    public class MyBinder extends Binder {
+        public GPS_Service getService() {
+            return GPS_Service.this;
+        }
+    }
+
+    NotificationManagerCompat notificationManagerCompat;
+    Notification notification;
+    private void addNotification() {
+        // create the notification
+        Notification.Builder m_notificationBuilder = new Notification.Builder(this)
+                .setContentTitle("GPS_Service")
+                .setContentText("You are in dangerzone")
+                .setSmallIcon(R.drawable.notification_small_icon);
+
+        // create the pending intent and add to the notification
+        Intent intent = new Intent(this, GPS_Service.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        m_notificationBuilder.setContentIntent(pendingIntent);
+
+        notification =  m_notificationBuilder.build();
+        // send the notification
+        notificationManagerCompat.notify(NOTIFICATION_ID, m_notificationBuilder.build());
+
+    }
+    public void cancelNotification(int id, String tag)
+    {
+        //you can get notificationManager like this:
+        //notificationManage r= (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManagerCompat.cancel(tag, id);
+    }
+
+
+
+
 }

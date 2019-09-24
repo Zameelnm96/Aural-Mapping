@@ -1,16 +1,21 @@
 package com.example.semester4project;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -38,6 +43,7 @@ import com.google.firebase.database.ValueEventListener;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = "MapActivity";
@@ -48,6 +54,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public static final double sensor1Lati = 7.095764;
     public static final double sensor2Longi = 80.111980;
     public static int dangerZoneRadSensor1 ;
+    private static final int NOTIFICATION_ID = 101;
 
     private BroadcastReceiver broadcastReceiver;
 
@@ -104,6 +111,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     };*/
     //
 
+    GPS_Service gps_service;
+    ServiceConnection m_serviceConnection;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,6 +136,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
         Intent i =new Intent(getApplicationContext(),GPS_Service.class);
         startService(i);
+
+        m_serviceConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                gps_service = ((GPS_Service.MyBinder)service).getService();
+            }
+
+            public void onServiceDisconnected(ComponentName className) {
+                gps_service = null;
+            }
+        };
+        Intent intent = new Intent(this, GPS_Service.class);
+        bindService(intent, m_serviceConnection, BIND_AUTO_CREATE);
+
+
 
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -336,6 +359,31 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if(broadcastReceiver != null){
             unregisterReceiver(broadcastReceiver);
         }
+    }
+    NotificationManagerCompat notificationManagerCompat;
+    Notification notification;
+    private void addNotification() {
+        // create the notification
+        Notification.Builder m_notificationBuilder = new Notification.Builder(this)
+                .setContentTitle("GPS_Service")
+                .setContentText("service_status_monitor")
+                .setSmallIcon(R.drawable.notification_small_icon);
+
+        // create the pending intent and add to the notification
+        Intent intent = new Intent(this, GPS_Service.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        m_notificationBuilder.setContentIntent(pendingIntent);
+
+        notification =  m_notificationBuilder.build();
+        // send the notification
+        notificationManagerCompat.notify(NOTIFICATION_ID, m_notificationBuilder.build());
+
+    }
+    public void cancelNotification(int id, String tag)
+    {
+        //you can get notificationManager like this:
+        //notificationManage r= (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManagerCompat.cancel(tag, id);
     }
 
     // earlier here had method call isLocationEnabled() now it in Main Activity.
