@@ -21,16 +21,14 @@ import com.google.firebase.database.ValueEventListener;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-/**
- * Created by filipp on 6/16/2016.
- */
+
 public class GPS_Service extends Service {
 
     private LocationListener listener;
     private LocationManager locationManager;
     public static final double sensor1Lati = 7.095764;
     public static final double sensor2Longi = 80.111980;
-    public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
+    public static int dangerZoneRadSensor1 ;
 
     DatabaseReference  databaseReference;
 
