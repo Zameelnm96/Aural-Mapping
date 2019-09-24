@@ -1,6 +1,9 @@
 package com.example.semester4project;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -23,6 +26,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
 /**
  * Created by filipp on 6/16/2016.
@@ -34,6 +38,8 @@ public class GPS_Service extends Service {
     public static final double sensor1Lati = 7.095764;
     public static final double sensor2Longi = 80.111980;
     public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
+    private static final int NOTIFICATION_ID = 101;
+
 
     DatabaseReference  databaseReference;
 
@@ -103,6 +109,8 @@ public class GPS_Service extends Service {
         //noinspection MissingPermission
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,listener);
 
+        notificationManagerCompat = NotificationManagerCompat.from(this);
+
     }
 
     @Override
@@ -119,6 +127,8 @@ public class GPS_Service extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         Log.i("GPS_Service", "onStartCommand");
+        addNotification();
+        startForeground(NOTIFICATION_ID, notification);
         return START_STICKY;
     }
 
@@ -127,15 +137,34 @@ public class GPS_Service extends Service {
             return GPS_Service.this;
         }
     }
-    private ServiceConnection m_serviceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            m_service = ((GPS_Service.MyBinder)service).getService();
-        }
 
-        public void onServiceDisconnected(ComponentName className) {
-            m_service = null;
-        }
-    };
+    NotificationManagerCompat notificationManagerCompat;
+    Notification notification;
+    private void addNotification() {
+        // create the notification
+        Notification.Builder m_notificationBuilder = new Notification.Builder(this)
+                .setContentTitle("GPS_Service")
+                .setContentText("service_status_monitor")
+                .setSmallIcon(R.drawable.notification_small_icon);
+
+        // create the pending intent and add to the notification
+        Intent intent = new Intent(this, GPS_Service.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        m_notificationBuilder.setContentIntent(pendingIntent);
+
+        notification =  m_notificationBuilder.build();
+        // send the notification
+        notificationManagerCompat.notify(NOTIFICATION_ID, m_notificationBuilder.build());
+
+    }
+    public void cancelNotification(int id, String tag)
+    {
+        //you can get notificationManager like this:
+        //notificationManage r= (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManagerCompat.cancel(tag, id);
+    }
+
+
 
 
 }
