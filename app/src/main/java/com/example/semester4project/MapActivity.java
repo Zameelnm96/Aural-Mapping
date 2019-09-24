@@ -45,9 +45,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     LocationRequest locationRequest;
 
-    private static final double sensor1Lati = 7.095764;
-    private static final double sensor2Longi = 80.111980;
-    private static int dangerZoneRadSensor1 ;
+    public static final double sensor1Lati = 7.095764;
+    public static final double sensor2Longi = 80.111980;
+    public static int dangerZoneRadSensor1 ;
 
     private BroadcastReceiver broadcastReceiver;
 
@@ -333,9 +333,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        /*if(broadcastReceiver != null){
+        if(broadcastReceiver != null){
             unregisterReceiver(broadcastReceiver);
-        }*/
+        }
     }
 
     // earlier here had method call isLocationEnabled() now it in Main Activity.

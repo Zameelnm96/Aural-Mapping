@@ -12,6 +12,13 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
@@ -21,6 +28,11 @@ public class GPS_Service extends Service {
 
     private LocationListener listener;
     private LocationManager locationManager;
+    public static final double sensor1Lati = 7.095764;
+    public static final double sensor2Longi = 80.111980;
+    public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
+
+    DatabaseReference  databaseReference;
 
     @Nullable
     @Override
@@ -31,7 +43,23 @@ public class GPS_Service extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
+        databaseReference = FirebaseDatabase.getInstance().getReference("Datas");
 
+        //this is only for get value of dangerZoneRadSensor1.
+        // below again addValueEventLister added
+        databaseReference.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("radius").getValue()).intValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        Log.i("GPS_Service", "onCreateMethod running");
         listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -39,6 +67,11 @@ public class GPS_Service extends Service {
                 i.putExtra("coordinates",location.getLongitude()+" "+location.getLatitude());
                 sendBroadcast(i);
                 Log.i("GPS_Service", "onLocationChanged: " + "coordinates"+location.getLongitude()+" "+location.getLatitude());
+                double distance =  DistanceCalculator.distance(sensor1Lati,location.getLatitude(),sensor2Longi,+location.getLongitude(),0,0);
+                 if (distance <= dangerZoneRadSensor1)
+
+                     Log.i("GPS_Service", "onLocationChanged: " +"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards");
+
             }
 
             @Override
