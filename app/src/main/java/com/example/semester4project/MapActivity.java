@@ -201,8 +201,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onSuccess(Location location) {
                 currentLoc = location;
-                preLati = currentLoc.getLatitude();
-                preLogi = currentLoc.getLongitude();
+//                preLati = currentLoc.getLatitude();
+ //               preLogi = currentLoc.getLongitude();
 
 
                 SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().

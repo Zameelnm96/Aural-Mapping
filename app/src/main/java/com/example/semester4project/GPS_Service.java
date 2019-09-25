@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import com.example.semester4project.MyApplication;
 
 /**
  * Created by filipp on 6/16/2016.
@@ -57,7 +58,7 @@ public class GPS_Service extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
-        createNotificationChannel();
+
         databaseReference = FirebaseDatabase.getInstance().getReference("Datas");
 
         //this is only for get value of dangerZoneRadSensor1.
@@ -114,15 +115,31 @@ public class GPS_Service extends Service {
                 Log.i("GPS_Service", "onLocationChanged: " + "coordinates"+location.getLongitude()+" "+location.getLatitude());
                 double distance =  DistanceCalculator.distance(sensor1Lati,location.getLatitude(),sensor2Longi,+location.getLongitude(),0,0);
                 if (distance <= dangerZoneRadSensor1){
-                    addNotification();
+                    ((MyApplication)getApplication()).triggerNotification(MapActivity.class,
+                            getString(R.string.NEWS_CHANNEL_ID),
+                            "Warning",
+                            "Click here to view map",
+                            "You are in danger zone ",
+                            NotificationCompat.PRIORITY_HIGH,
+                            true,
+                            getResources().getInteger(R.integer.notificationId),
+                            PendingIntent.FLAG_UPDATE_CURRENT);
                     //startForeground(NOTIFICATION_ID, notification);
                     Log.i("GPS_Service", "onLocationChanged: " +"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards");
                 }
                 else{
-                    if(notificationManagerCompat != null) {
-                        notificationManagerCompat.cancel(R.integer.notificationId);
-                    }
+
+                        ((MyApplication)getApplication()).cancelNotification(getResources().getInteger(R.integer.notificationId));
+
                 }
+                // THIS IS FOR UPDATE NOTIFICATION AT RUNTIME
+                /*((MyApplication)getApplication()).updateNotification(MapActivity.class,
+                        "Updated Notification",
+                        "This is updatedNotification",
+                        getString(R.string.NEWS_CHANNEL_ID),
+                        getResources().getInteger(R.integer.notificationId),
+                        "This is a updated information for bigpicture String",
+                        PendingIntent.FLAG_UPDATE_CURRENT);*/
             }
 
             @Override
@@ -161,42 +178,8 @@ public class GPS_Service extends Service {
         }
     }
 
-    NotificationManagerCompat notificationManagerCompat;
-    Notification notification;
-    private void addNotification() {
-        // create the notification
-            Intent intent = new Intent(this, MapActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this,0, intent, 0);
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, getString(R.string.NEWS_CHANNEL_ID))
-                    .setSmallIcon(R.drawable.notification_small_icon)
-                    .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.error))
-                    .setContentTitle("Alert")
-                    .setContentText("Click here to view the zone")
-                    .setStyle(new NotificationCompat.BigTextStyle().bigText("You are in danger zone now."))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setContentIntent(pendingIntent)
-                    .setChannelId(getString(R.string.NEWS_CHANNEL_ID))
-                    .setAutoCancel(true);
-
-             notificationManagerCompat = NotificationManagerCompat.from(this);
-             notificationManagerCompat.notify(getResources().getInteger(R.integer.notificationId), builder.build());
 
 
-
-
-    }
-
-    private void createNotificationChannel(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            NotificationChannel notificationChannel = new NotificationChannel(getString(R.string.NEWS_CHANNEL_ID),getString(R.string.CHANNEL_NEWS), NotificationManager.IMPORTANCE_DEFAULT );
-            notificationChannel.setDescription(getString(R.string.CHANNEL_DESCRIPTION));
-            notificationChannel.setShowBadge(true);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(notificationChannel);
-        }
-    }
 
 
 
