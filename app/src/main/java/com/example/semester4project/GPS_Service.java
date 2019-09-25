@@ -2,6 +2,7 @@ package com.example.semester4project;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -9,10 +10,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -26,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 /**
@@ -55,6 +59,7 @@ public class GPS_Service extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
+        createNotificationChannel();
         databaseReference = FirebaseDatabase.getInstance().getReference("Datas");
 
         //this is only for get value of dangerZoneRadSensor1.
@@ -79,7 +84,7 @@ public class GPS_Service extends Service {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, listener);// So our on location change method will run every 3 second because of
             // we made min distance is zero.
 
-            notificationManagerCompat = NotificationManagerCompat.from(this);
+
         }
 
     }
@@ -116,8 +121,9 @@ public class GPS_Service extends Service {
                     Log.i("GPS_Service", "onLocationChanged: " +"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards");
                 }
                 else{
-
-                    notificationManagerCompat.cancel(NOTIFICATION_ID);
+                    if(notificationManagerCompat != null) {
+                        notificationManagerCompat.cancel(R.integer.notificationId);
+                    }
                 }
             }
 
@@ -145,7 +151,7 @@ public class GPS_Service extends Service {
             //noinspection MissingPermission
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, listener);
 
-            notificationManagerCompat = NotificationManagerCompat.from(this);
+
         }
 
         return START_STICKY;
@@ -161,23 +167,38 @@ public class GPS_Service extends Service {
     Notification notification;
     private void addNotification() {
         // create the notification
-        Notification.Builder m_notificationBuilder = new Notification.Builder(this)
-                .setContentTitle("GPS_Service")
-                .setContentText("You are in dangerzone")
-                .setSmallIcon(R.drawable.notification_small_icon);
+            Intent intent = new Intent(this, MapActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this,0, intent, 0);
 
-        // create the pending intent and add to the notification
-        Intent intent = new Intent(this, GPS_Service.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        m_notificationBuilder.setContentIntent(pendingIntent);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, getString(R.string.NEWS_CHANNEL_ID))
+                    .setSmallIcon(R.drawable.notification_small_icon)
+                    .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.error))
+                    .setContentTitle("Alert")
+                    .setContentText("Click here to view the zone")
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText("You are in danger zone now."))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentIntent(pendingIntent)
+                    .setChannelId(getString(R.string.NEWS_CHANNEL_ID))
+                    .setAutoCancel(true);
 
-        notification =  m_notificationBuilder.build();
-        // send the notification
-        notificationManagerCompat.notify(NOTIFICATION_ID, m_notificationBuilder.build());
+             notificationManagerCompat = NotificationManagerCompat.from(this);
+             notificationManagerCompat.notify(getResources().getInteger(R.integer.notificationId), builder.build());
+
+
+
 
     }
 
-
+    private void createNotificationChannel(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel notificationChannel = new NotificationChannel(getString(R.string.NEWS_CHANNEL_ID),getString(R.string.CHANNEL_NEWS), NotificationManager.IMPORTANCE_DEFAULT );
+            notificationChannel.setDescription(getString(R.string.CHANNEL_DESCRIPTION));
+            notificationChannel.setShowBadge(true);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+    }
 
 
 
