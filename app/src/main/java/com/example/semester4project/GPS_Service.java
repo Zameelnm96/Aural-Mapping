@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -47,6 +48,7 @@ public class GPS_Service extends Service {
     DatabaseReference  databaseReference;
 
     Service m_service;
+    private static int warningZoneRadSensor1;
 
 
     @Nullable
@@ -67,7 +69,8 @@ public class GPS_Service extends Service {
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("radius").getValue()).intValue();
+                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("dangerRadius").getValue()).intValue();
+                warningZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("warningRadius").getValue()).intValue();
             }
 
             @Override
@@ -117,8 +120,8 @@ public class GPS_Service extends Service {
                 if (distance <= dangerZoneRadSensor1){
                     ((MyApplication)getApplication()).triggerNotification(MapActivity.class,
                             getString(R.string.NEWS_CHANNEL_ID),
-                            "Warning",
-                            "Click here to view map",
+                            "Danger",
+                            "You are in danger zone.Click here to view map",
                             "You are in danger zone ",
                             NotificationCompat.PRIORITY_HIGH,
                             true,
@@ -127,6 +130,20 @@ public class GPS_Service extends Service {
                     //startForeground(NOTIFICATION_ID, notification);
                     Log.i("GPS_Service", "onLocationChanged: " +"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards");
                 }
+                else if (distance <= warningZoneRadSensor1 ){
+                    ((MyApplication)getApplication()).triggerNotification(MapActivity.class,
+                            getString(R.string.NEWS_CHANNEL_ID),
+                            "Warning",
+                            "You are in Warning Zone. Click here to view map",
+                            "You are in Warning Zone ",
+                            NotificationCompat.PRIORITY_HIGH,
+                            true,
+                            getResources().getInteger(R.integer.notificationId),
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+                }
+
+
+
                 else{
 
                         ((MyApplication)getApplication()).cancelNotification(getResources().getInteger(R.integer.notificationId));

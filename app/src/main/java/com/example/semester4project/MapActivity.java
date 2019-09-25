@@ -53,7 +53,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public static final double sensor1Lati = 7.095764;
     public static final double sensor2Longi = 80.111980;
-    public static int dangerZoneRadSensor1 ;
+    public static int dangerZoneRadSensor1 , warningZoneRadSensor1 ;
     private static final int NOTIFICATION_ID = 101;
 
     private BroadcastReceiver broadcastReceiver;
@@ -76,8 +76,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     // just commented for check
 
     private DatabaseReference databaseReference;// using this refernce only we are going to retreive data
-    private Circle circleSensor1,circleSensor2;//later we can remove circles using this
-    private Marker markerSensor1,markerSensor2;
+    private Circle dangerCircleSensor1, dangerCircleSensor2;//later we can remove circles using this
+    private Circle warningCircleSensor1,warningCircleSensor2;
+    private Marker dangerMarkerSensor1,dangerMarkerSensor2;
+    private Marker warningMarkerSensor1,warningMarkerSensor2;
 
     //this will run location change by 1m and update in 2s. 1m and 2s mention above.
     /*LocationListener locationListenerGPS=new LocationListener() {
@@ -126,7 +128,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("radius").getValue()).intValue();
+                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("dangerRadius").getValue()).intValue();
+                warningZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("warningRadius").getValue()).intValue();
             }
 
             @Override
@@ -201,8 +204,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onSuccess(Location location) {
                 currentLoc = location;
-//                preLati = currentLoc.getLatitude();
- //               preLogi = currentLoc.getLongitude();
+                preLati = currentLoc.getLatitude();
+                preLogi = currentLoc.getLongitude();
 
 
                 SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().
@@ -248,10 +251,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 //dataSnapshot.key will give "Datas" but here i am not using that key
                 int sensorReading1,sensorReading2;
 
-                if(circleSensor1!=null)  circleSensor1.remove();    // every time data changes on database
-                if(circleSensor2!=null)  circleSensor2.remove(); // here we delete all marker and
-                if(markerSensor1!=null)  markerSensor1.remove(); // circle if it is on map
-                if(markerSensor2!=null)  markerSensor2.remove(); // later we adding marker and circle again using database value
+                if( dangerCircleSensor1!=null)   dangerCircleSensor1.remove();    // every time data changes on database
+                if( dangerCircleSensor2!=null)   dangerCircleSensor2.remove(); // here we delete all marker and
+
+                if( warningCircleSensor1!=null)   warningCircleSensor1.remove();
+                if( warningCircleSensor2!=null)   warningCircleSensor2.remove();
+
+                if(dangerMarkerSensor1!=null)  dangerMarkerSensor1.remove(); // circle if it is on map
+                if(dangerMarkerSensor2!=null)  dangerMarkerSensor2.remove(); // later we adding marker and circle again using database value
+
+                if(warningMarkerSensor1!=null)  warningMarkerSensor1.remove();
+                if(warningMarkerSensor2!=null)  warningMarkerSensor2.remove();
+
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
                     String sensor = postSnapshot.getKey().toLowerCase().trim();//it give the sensor name
                     //we have to handle the cases for all sensors in our list
@@ -265,22 +276,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         longitude = Double.parseDouble(locationDecoder(location)[1]);
                         LatLng latLng = new LatLng(latitude,longitude);//create location coordinates with lati and longi
                         // using latitude and longitude we can mark position in map using below line
-                        markerSensor1 = map.addMarker(new MarkerOptions().position(latLng).title("Sensor 1 is here"));// added into
+                        dangerMarkerSensor1 = map.addMarker(new MarkerOptions().position(latLng).title("Sensor 1 is here"));// added into
                         // Marker object
-                        int radius = ((Long)postSnapshot.child("radius").getValue()).intValue();//radius is in long we haveto
+                        int dangerRadius = ((Long)postSnapshot.child("dangerRadius").getValue()).intValue();//radius is in long we haveto
                         // convert it into int
-                        dangerZoneRadSensor1 = radius;
-                        circleSensor1 = map.addCircle(getCircleOption(latLng,radius,Color.GREEN));//draw the circle on map added
+                        int warningRadius = ((Long)postSnapshot.child("warningRadius").getValue()).intValue();
+                        dangerZoneRadSensor1 = dangerRadius;
+                        warningZoneRadSensor1 = warningRadius;
+                        dangerCircleSensor1 = map.addCircle(getCircleOption(latLng,dangerRadius,Color.RED));//draw the circle on map added
                         // into Circle object
+                        warningCircleSensor1 = map.addCircle(getCircleOption(latLng,warningRadius,Color.GREEN));
                     }
                     else if (sensor.equalsIgnoreCase("sensor2")){
                         String  location = postSnapshot.child("location").getValue().toString() ;
                         latitude = Double.parseDouble(locationDecoder(location)[0]);
                         longitude = Double.parseDouble(locationDecoder(location)[1]);
                         LatLng latLng = new LatLng(latitude,longitude);
-                        markerSensor2 = map.addMarker(new MarkerOptions().position(new LatLng(latitude,longitude)).title("Sensor 2 is here"));
-                        int radius = ((Long)postSnapshot.child("radius").getValue()).intValue();
-                        circleSensor2 = map.addCircle(getCircleOption(latLng,radius,Color.BLACK));
+                        dangerMarkerSensor2 = map.addMarker(new MarkerOptions().position(new LatLng(latitude,longitude)).title("Sensor 2 is here"));
+                        int dangerRadius = ((Long)postSnapshot.child("dangerRadius").getValue()).intValue();
+                        int warningRadius = ((Long)postSnapshot.child("warningRadius").getValue()).intValue();
+                        dangerCircleSensor2 = map.addCircle(getCircleOption(latLng,dangerRadius,Color.BLACK));
+                        warningCircleSensor2 = map.addCircle(getCircleOption(latLng,warningRadius,Color.GREEN));
                     }
                 }
 
@@ -293,6 +309,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 if (distance <= dangerZoneRadSensor1)
                     Toast.makeText(MapActivity.this,"You are in danger zone. Move " + (dangerZoneRadSensor1 - distance) + " m backwards" ,Toast.LENGTH_LONG).show();
+                else if (distance <= warningZoneRadSensor1 )
+                    Toast.makeText(MapActivity.this,"You are in warning zone. " ,Toast.LENGTH_LONG).show();
 
             }
 
