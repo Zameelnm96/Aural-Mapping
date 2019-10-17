@@ -1,24 +1,18 @@
 package com.example.semester4project;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,8 +23,6 @@ import com.google.firebase.database.ValueEventListener;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import com.example.semester4project.MyApplication;
 
 /**
  * Created by filipp on 6/16/2016.
@@ -39,8 +31,8 @@ public class GPS_Service extends Service {
 
     private LocationListener listener;
     private LocationManager locationManager;
-    public static final double sensor1Lati = 6.7938858;
-    public static final double sensor1Longi = 79.8993599;
+    public static  double sensor1Lati;
+    public static  double sensor1Longi;
     public static final double sensor2Longi = 80.111980;
     public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
     private static final int NOTIFICATION_ID = 101;
@@ -72,6 +64,10 @@ public class GPS_Service extends Service {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("dangerRadius").getValue()).intValue();
                 warningZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("warningRadius").getValue()).intValue();
+                String strLocation =(String) (dataSnapshot.child("Sensor1").child("location").getValue());
+                double[] location = Calculator.getLocation(strLocation);
+                sensor1Lati = location[0]; sensor1Longi = location[1];
+                Log.d("testing", "onCreate: Latitude - " + location[0]+" Longitude - " + location[1]);
             }
 
             @Override
@@ -107,7 +103,23 @@ public class GPS_Service extends Service {
     public int onStartCommand(Intent intent, final int flags, int startId) {
 
         Log.i("GPS_Service", "onStartCommand");
+        databaseReference.addValueEventListener(new ValueEventListener() {
 
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("dangerRadius").getValue()).intValue();
+                warningZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("warningRadius").getValue()).intValue();
+                String strLocation =(String) (dataSnapshot.child("Sensor1").child("location").getValue());
+                double[] location = Calculator.getLocation(strLocation);
+                sensor1Lati = location[0]; sensor1Longi = location[1];
+                Log.d("testing", "onCreate: Latitude - " + location[0]+" Longitude - " + location[1]);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         //startForeground(NOTIFICATION_ID, notification);
         listener = new LocationListener() {
@@ -117,7 +129,7 @@ public class GPS_Service extends Service {
                 i.putExtra("coordinates",location.getLongitude()+" "+location.getLatitude());
                 sendBroadcast(i);
                 Log.i("GPS_Service", "onLocationChanged: " + "coordinates"+location.getLongitude()+" "+location.getLatitude());
-                double distance =  DistanceCalculator.distance(sensor1Lati,location.getLatitude(),sensor1Longi,+location.getLongitude(),0,0);
+                double distance =  Calculator.distance(sensor1Lati,location.getLatitude(),sensor1Longi,+location.getLongitude(),0,0);
                 if (distance <= dangerZoneRadSensor1){
                     ((MyApplication)getApplication()).triggerNotification(MapActivity.class,
                             getString(R.string.NEWS_CHANNEL_ID),

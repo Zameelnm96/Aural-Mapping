@@ -302,7 +302,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 double latitude=currentLoc.getLatitude();
                 double longitude=currentLoc.getLongitude();
-                double distance =  DistanceCalculator.distance(sensor1Lati,latitude,sensor2Longi,longitude,0,0); //gives the distance changed
+                double distance =  Calculator.distance(sensor1Lati,latitude,sensor2Longi,longitude,0,0); //gives the distance changed
                 preLati = latitude;
                 preLogi = longitude;
                 // String msg="New Latitude: "+latitude + "New Longitude: "+longitude;

@@ -8,7 +8,7 @@ package com.example.semester4project;
  * el2 End altitude in meters
  * @returns Distance in Meters
  */
-public class DistanceCalculator {
+public class Calculator {
     public static double distance(double lat1, double lat2, double lon1,
                                   double lon2, double el1, double el2) {
 
@@ -27,5 +27,10 @@ public class DistanceCalculator {
         distance = Math.pow(distance, 2) + Math.pow(height, 2);
 
         return Math.sqrt(distance);
+    }
+    public static double[] getLocation(String str){
+        String[] locaionString = str.trim().split(",");
+        double[] location = {Double.parseDouble(locaionString[0]),Double.parseDouble( locaionString[1])};
+        return location;
     }
 }
