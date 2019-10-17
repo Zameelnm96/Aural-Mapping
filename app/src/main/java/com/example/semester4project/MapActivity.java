@@ -1,6 +1,8 @@
 package com.example.semester4project;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -10,6 +12,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -40,25 +43,29 @@ import com.google.firebase.database.ValueEventListener;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = "MapActivity";
     private final int LOCATION_REQUEST_CODE = 100;
 
-
+    LocationRequest locationRequest;
 
     public static final double sensor1Lati = 7.095764;
     public static final double sensor2Longi = 80.111980;
     public static int dangerZoneRadSensor1 , warningZoneRadSensor1 ;
-
+    private static final int NOTIFICATION_ID = 101;
 
     private BroadcastReceiver broadcastReceiver;
 
 
     GoogleMap map;// this the map we going to edit
 
-    Location currentLoc;
+    LocationManager locationManager;
 
+
+    Location currentLoc;
+    Circle currentLocCircle;// we can use this for removing the circle
     double preLati,preLogi;// this variable save previous status before change
 
 
