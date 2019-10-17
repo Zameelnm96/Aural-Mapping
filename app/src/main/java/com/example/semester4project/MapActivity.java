@@ -378,9 +378,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             unregisterReceiver(broadcastReceiver);
         }
     }
-    NotificationManagerCompat notificationManagerCompat;
-    Notification notification;
-    private void addNotification() {
+  /*  NotificationManagerCompat notificationManagerCompat;
+    Notification notification;*/
+/*    private void addNotification() {
         // create the notification
         Notification.Builder m_notificationBuilder = new Notification.Builder(this)
                 .setContentTitle("GPS_Service")
@@ -402,7 +402,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         //you can get notificationManager like this:
         //notificationManage r= (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManagerCompat.cancel(tag, id);
-    }
+    }*/
 
     // earlier here had method call isLocationEnabled() now it in Main Activity.
 }

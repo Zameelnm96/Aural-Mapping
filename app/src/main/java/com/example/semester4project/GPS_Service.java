@@ -39,7 +39,8 @@ public class GPS_Service extends Service {
 
     private LocationListener listener;
     private LocationManager locationManager;
-    public static final double sensor1Lati = 7.095764;
+    public static final double sensor1Lati = 6.7938858;
+    public static final double sensor1Longi = 79.8993599;
     public static final double sensor2Longi = 80.111980;
     public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
     private static final int NOTIFICATION_ID = 101;
@@ -116,7 +117,7 @@ public class GPS_Service extends Service {
                 i.putExtra("coordinates",location.getLongitude()+" "+location.getLatitude());
                 sendBroadcast(i);
                 Log.i("GPS_Service", "onLocationChanged: " + "coordinates"+location.getLongitude()+" "+location.getLatitude());
-                double distance =  DistanceCalculator.distance(sensor1Lati,location.getLatitude(),sensor2Longi,+location.getLongitude(),0,0);
+                double distance =  DistanceCalculator.distance(sensor1Lati,location.getLatitude(),sensor1Longi,+location.getLongitude(),0,0);
                 if (distance <= dangerZoneRadSensor1){
                     ((MyApplication)getApplication()).triggerNotification(MapActivity.class,
                             getString(R.string.NEWS_CHANNEL_ID),
