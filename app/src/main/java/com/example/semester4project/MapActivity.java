@@ -1,8 +1,6 @@
 package com.example.semester4project;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,7 +10,6 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -43,13 +40,11 @@ import com.google.firebase.database.ValueEventListener;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = "MapActivity";
     private final int LOCATION_REQUEST_CODE = 100;
 
-    LocationRequest locationRequest;
 
     public static final double sensor1Lati = 7.095764;
     public static final double sensor2Longi = 80.111980;
@@ -61,11 +56,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     GoogleMap map;// this the map we going to edit
 
-    LocationManager locationManager;
+
 
 
     Location currentLoc;
-    Circle currentLocCircle;// we can use this for removing the circle
+
     double preLati,preLogi;// this variable save previous status before change
 
 
@@ -272,8 +267,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     // index 1 gives longitude
                     if (sensor.equalsIgnoreCase("sensor1")){
                         String  location = postSnapshot.child("location").getValue().toString() ;
-                        latitude = Double.parseDouble(locationDecoder(location)[0]);
-                        longitude = Double.parseDouble(locationDecoder(location)[1]);
+                        double[] locationArray = Calculator.getLocation(location);
+                        latitude = locationArray[0];
+                        longitude = locationArray[1];
                         LatLng latLng = new LatLng(latitude,longitude);//create location coordinates with lati and longi
                         // using latitude and longitude we can mark position in map using below line
                         dangerMarkerSensor1 = map.addMarker(new MarkerOptions().position(latLng).title("Sensor 1 is here"));// added into
@@ -288,9 +284,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         warningCircleSensor1 = map.addCircle(getCircleOption(latLng,warningRadius,Color.GREEN));
                     }
                     else if (sensor.equalsIgnoreCase("sensor2")){
-                        String  location = postSnapshot.child("location").getValue().toString() ;
-                        latitude = Double.parseDouble(locationDecoder(location)[0]);
-                        longitude = Double.parseDouble(locationDecoder(location)[1]);
+                        String  location = postSnapshot.child("location").getValue().toString().trim() ;
+                        double[] locationArray = Calculator.getLocation(location);
+                        latitude = locationArray[0];
+                        longitude = locationArray[1];
                         LatLng latLng = new LatLng(latitude,longitude);
                         dangerMarkerSensor2 = map.addMarker(new MarkerOptions().position(new LatLng(latitude,longitude)).title("Sensor 2 is here"));
                         int dangerRadius = ((Long)postSnapshot.child("dangerRadius").getValue()).intValue();
@@ -347,12 +344,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         return circleOptions;
     }
-    // decode location string
-    private String[] locationDecoder(String string){
-        String line1 = string.replace("\"", "");
-        String[] splitList = line1.split(",");
-        return splitList;
-    }
+
 
     @Override
     protected void onResume() {
@@ -363,7 +355,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 @Override
                 public void onReceive(Context context, Intent intent) {
 
-                    Toast.makeText(getApplicationContext(),intent.getExtras().get("coordinates") + "",Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onReceive: " + intent.getExtras().get("coordinates"));
 
                 }
             };

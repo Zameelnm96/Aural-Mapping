@@ -33,14 +33,13 @@ public class GPS_Service extends Service {
     private LocationManager locationManager;
     public static  double sensor1Lati;
     public static  double sensor1Longi;
-    public static final double sensor2Longi = 80.111980;
+
     public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
-    private static final int NOTIFICATION_ID = 101;
+
 
 
     DatabaseReference  databaseReference;
 
-    Service m_service;
     private static int warningZoneRadSensor1;
 
 
