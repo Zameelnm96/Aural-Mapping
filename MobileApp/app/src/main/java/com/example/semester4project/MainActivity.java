@@ -22,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         locationManager=(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         //simply will start new activity
+        //
+        // for git hub testing
         Button btn = findViewById(R.id.btn);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
