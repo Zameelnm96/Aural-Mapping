@@ -273,6 +273,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         LatLng latLng = new LatLng(latitude,longitude);//create location coordinates with lati and longi
                         // using latitude and longitude we can mark position in map using below line
                         dangerMarkerSensor1 = map.addMarker(new MarkerOptions().position(latLng).title("Sensor 1 is here"));// added into
+                        dangerMarkerSensor1.showInfoWindow();//to display tag always
                         // Marker object
                         int dangerRadius = ((Long)postSnapshot.child("dangerRadius").getValue()).intValue();//radius is in long we haveto
                         // convert it into int
@@ -290,6 +291,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         longitude = locationArray[1];
                         LatLng latLng = new LatLng(latitude,longitude);
                         dangerMarkerSensor2 = map.addMarker(new MarkerOptions().position(new LatLng(latitude,longitude)).title("Sensor 2 is here"));
+                        dangerMarkerSensor2.showInfoWindow();//to display tag always
                         int dangerRadius = ((Long)postSnapshot.child("dangerRadius").getValue()).intValue();
                         int warningRadius = ((Long)postSnapshot.child("warningRadius").getValue()).intValue();
                         dangerCircleSensor2 = map.addCircle(getCircleOption(latLng,dangerRadius,Color.BLACK));

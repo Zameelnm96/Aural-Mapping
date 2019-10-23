@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         locationManager=(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         //simply will start new activity
+        
         Button btn = findViewById(R.id.btn);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -32,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         isLocationEnabled();
-        //
 
     }
     private boolean isLocationEnabled() {
