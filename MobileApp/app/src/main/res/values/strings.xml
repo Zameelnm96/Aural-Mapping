@@ -3,4 +3,6 @@
     <string name="NEWS_CHANNEL_ID">news</string>
     <string name="CHANNEL_NEWS">News</string>
     <string name="CHANNEL_DESCRIPTION">Get informed with new updates</string>
+    <string name="title_location_permission">You must allow permission to continue</string>
+    <string name="text_location_permission" />
 </resources>
