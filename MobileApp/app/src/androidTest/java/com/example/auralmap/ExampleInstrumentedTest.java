@@ -1,4 +1,4 @@
-package com.example.semester4project;
+package com.example.auralmap;
 
 import android.content.Context;
 
@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.example.semester4project", appContext.getPackageName());
+        assertEquals("com.example.auralmap", appContext.getPackageName());
     }
 }

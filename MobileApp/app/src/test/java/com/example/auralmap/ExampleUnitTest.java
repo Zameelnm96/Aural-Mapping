@@ -1,4 +1,4 @@
-package com.example.semester4project;
+package com.example.auralmap;
 
 import org.junit.Test;
 

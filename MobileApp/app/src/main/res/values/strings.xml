@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Semester4 Project</string>
+    <string name="app_name">Aural Map</string>
     <string name="NEWS_CHANNEL_ID">news</string>
     <string name="CHANNEL_NEWS">News</string>
     <string name="CHANNEL_DESCRIPTION">Get informed with new updates</string>

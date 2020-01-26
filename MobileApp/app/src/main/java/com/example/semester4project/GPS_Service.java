@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,6 +30,7 @@ import androidx.core.app.NotificationCompat;
  */
 public class GPS_Service extends Service {
 
+    final double  sorceLati = 7.09674,sourceLongti = 80.11168;
     private LocationListener listener;
     private LocationManager locationManager;
     public static  double sensor1Lati;
@@ -53,7 +55,9 @@ public class GPS_Service extends Service {
     @Override
     public void onCreate() {
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("Datas");
+        databaseReference = FirebaseDatabase
+                .getInstance("https://aural-project.firebaseio.com/")
+                .getReference();
 
         //this is only for get value of dangerZoneRadSensor1.
         // below again addValueEventLister added
@@ -61,12 +65,12 @@ public class GPS_Service extends Service {
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("dangerRadius").getValue()).intValue();
-                warningZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("warningRadius").getValue()).intValue();
-                String strLocation =(String) (dataSnapshot.child("Sensor1").child("location").getValue());
-                double[] location = Calculator.getLocation(strLocation);
-                sensor1Lati = location[0]; sensor1Longi = location[1];
-                Log.d("testing", "onCreate: Latitude - " + location[0]+" Longitude - " + location[1]);
+                double db = Double.parseDouble(dataSnapshot.child("CITY1LOC1")
+                        .child("reading").getValue().toString());
+
+                dangerZoneRadSensor1 = Calculator.calcDangerRad(db, 20);
+                warningZoneRadSensor1 = Calculator.calcWarningRad(db,20);
+                LatLng latLng = new LatLng(sorceLati,sourceLongti);
             }
 
             @Override
@@ -106,12 +110,12 @@ public class GPS_Service extends Service {
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("dangerRadius").getValue()).intValue();
-                warningZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("warningRadius").getValue()).intValue();
-                String strLocation =(String) (dataSnapshot.child("Sensor1").child("location").getValue());
-                double[] location = Calculator.getLocation(strLocation);
-                sensor1Lati = location[0]; sensor1Longi = location[1];
-                Log.d("testing", "onCreate: Latitude - " + location[0]+" Longitude - " + location[1]);
+                double db = Double.parseDouble(dataSnapshot.child("CITY1LOC1")
+                        .child("reading").getValue().toString());
+
+                dangerZoneRadSensor1 = Calculator.calcDangerRad(db, 8);
+                warningZoneRadSensor1 = Calculator.calcWarningRad(db,8);
+                LatLng latLng = new LatLng(sorceLati,sourceLongti);
             }
 
             @Override
@@ -128,7 +132,7 @@ public class GPS_Service extends Service {
                 i.putExtra("coordinates",location.getLongitude()+" "+location.getLatitude());
                 sendBroadcast(i);
                 Log.i("GPS_Service", "onLocationChanged: " + "coordinates"+location.getLongitude()+" "+location.getLatitude());
-                double distance =  Calculator.distance(sensor1Lati,location.getLatitude(),sensor1Longi,+location.getLongitude(),0,0);
+                double distance =  Calculator.distance(sorceLati,location.getLatitude(),sourceLongti,+location.getLongitude(),0,0);
                 if (distance <= dangerZoneRadSensor1){
                     ((MyApplication)getApplication()).triggerNotification(MapActivity.class,
                             getString(R.string.NEWS_CHANNEL_ID),

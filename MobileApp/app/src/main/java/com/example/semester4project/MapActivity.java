@@ -69,7 +69,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     // the location using fused location provider.
     // just commented for check
-
+    final double  sorceLati = 7.09674,sourceLongti = 80.11168;
     private DatabaseReference databaseReference;// using this refernce only we are going to retreive data
     private Circle dangerCircleSensor1, dangerCircleSensor2;//later we can remove circles using this
     private Circle warningCircleSensor1,warningCircleSensor2;
@@ -115,7 +115,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("Datas");
+
+
+
+        databaseReference = FirebaseDatabase
+                .getInstance("https://aural-project.firebaseio.com/")
+                .getReference();
 
         //this is only for get value of dangerZoneRadSensor1.
         // below again addValueEventLister added
@@ -123,13 +128,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                dangerZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("dangerRadius").getValue()).intValue();
-                warningZoneRadSensor1 = ((Long)dataSnapshot.child("Sensor1").child("warningRadius").getValue()).intValue();
+                double db = Double.parseDouble(dataSnapshot.child("CITY1LOC1")
+                        .child("reading").getValue().toString());
+
+                dangerZoneRadSensor1 = Calculator.calcDangerRad(db, 20);
+                warningZoneRadSensor1 = Calculator.calcWarningRad(db,20);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Log.d(TAG, "onCancelled: "+databaseError.toString());
             }
         });
         Intent i =new Intent(getApplicationContext(),GPS_Service.class);
@@ -258,7 +266,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if(warningMarkerSensor1!=null)  warningMarkerSensor1.remove();
                 if(warningMarkerSensor2!=null)  warningMarkerSensor2.remove();
 
-                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
+                double db = Double.parseDouble(dataSnapshot.child("CITY1LOC1")
+                        .child("reading").getValue().toString());
+
+                dangerZoneRadSensor1 = Calculator.calcDangerRad(db, 8);
+                warningZoneRadSensor1 = Calculator.calcWarningRad(db,8);
+                LatLng latLng = new LatLng(sorceLati,sourceLongti);
+                dangerMarkerSensor1 = map.addMarker(new MarkerOptions().position(latLng).title("Sensor 1 is here"));// added into
+                dangerMarkerSensor1.showInfoWindow();//to display tag always
+                dangerCircleSensor1 = map.addCircle(getCircleOption(latLng,dangerZoneRadSensor1,Color.RED));//draw the circle on map added
+                // into Circle object
+                warningCircleSensor1 = map.addCircle(getCircleOption(latLng,warningZoneRadSensor1,Color.GREEN));
+                /*for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
                     String sensor = postSnapshot.getKey().toLowerCase().trim();//it give the sensor name
                     //we have to handle the cases for all sensors in our list
                     double latitude,longitude;//location in database look like this "12.3,45.754" we have to decode this
@@ -275,7 +294,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         dangerMarkerSensor1 = map.addMarker(new MarkerOptions().position(latLng).title("Sensor 1 is here"));// added into
                         dangerMarkerSensor1.showInfoWindow();//to display tag always
                         // Marker object
-                        int dangerRadius = (int) Calculator.getDistance(110,80,5);//radius is in long we haveto
+                        int dangerRadius = ((Long)postSnapshot.child("dangerRadius").getValue()).intValue();//radius is in long we haveto
                         // convert it into int
                         int warningRadius = ((Long)postSnapshot.child("warningRadius").getValue()).intValue();
                         dangerZoneRadSensor1 = dangerRadius;
@@ -297,7 +316,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         dangerCircleSensor2 = map.addCircle(getCircleOption(latLng,dangerRadius,Color.BLACK));
                         warningCircleSensor2 = map.addCircle(getCircleOption(latLng,warningRadius,Color.GREEN));
                     }
-                }
+                }*/
 
                 double latitude=currentLoc.getLatitude();
                 double longitude=currentLoc.getLongitude();
@@ -372,7 +391,31 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             unregisterReceiver(broadcastReceiver);
         }
     }
+  /*  NotificationManagerCompat notificationManagerCompat;
+    Notification notification;*/
+/*    private void addNotification() {
+        // create the notification
+        Notification.Builder m_notificationBuilder = new Notification.Builder(this)
+                .setContentTitle("GPS_Service")
+                .setContentText("service_status_monitor")
+                .setSmallIcon(R.drawable.notification_small_icon);
 
+        // create the pending intent and add to the notification
+        Intent intent = new Intent(this, GPS_Service.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        m_notificationBuilder.setContentIntent(pendingIntent);
+
+        notification =  m_notificationBuilder.build();
+        // send the notification
+        notificationManagerCompat.notify(NOTIFICATION_ID, m_notificationBuilder.build());
+
+    }
+    public void cancelNotification(int id, String tag)
+    {
+        //you can get notificationManager like this:
+        //notificationManage r= (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManagerCompat.cancel(tag, id);
+    }*/
 
     // earlier here had method call isLocationEnabled() now it in Main Activity.
 }

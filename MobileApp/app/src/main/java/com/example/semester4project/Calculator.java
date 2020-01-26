@@ -34,9 +34,11 @@ public class Calculator {
         return location;
     }
 
-    //calculate safe distance for safe value
-    public static double getDistance(double db,double safeDB , double sourceDist){
-        return sourceDist*(Math.pow(2,(db-safeDB)/6));
+    public  static int calcDangerRad(double db,int dist){// here distance from sorce to sensor
+        return (int) (dist * Math.pow(10,(db-105)/20));
+    }
+    public  static int calcWarningRad(double db,int dist){// here distance from sorce to sensor
+        return (int) (dist * Math.pow(10,(db-85)/20));
     }
 
 }
