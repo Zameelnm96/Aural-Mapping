@@ -33,12 +33,15 @@ public class Calculator {
         double[] location = {Double.parseDouble(locaionString[0]),Double.parseDouble( locaionString[1])};
         return location;
     }
-
+/*
     public  static int calcDangerRad(double db,int dist){// here distance from sorce to sensor
         return (int) (dist * Math.pow(10,(db-105)/20));
     }
     public  static int calcWarningRad(double db,int dist){// here distance from sorce to sensor
         return (int) (dist * Math.pow(10,(db-85)/20));
+    }*/
+    public static double getDistance(double db,double safeDB , double sourceDist){
+        return sourceDist*(Math.pow(2,(db-safeDB)/6));
     }
 
 }

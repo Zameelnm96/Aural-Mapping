@@ -36,13 +36,16 @@ public class GPS_Service extends Service {
     public static  double sensor1Lati;
     public static  double sensor1Longi;
 
-    public static int dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
+    public static double dangerZoneRadSensor1 = MapActivity.dangerZoneRadSensor1 ;
+    int highdb =90 ;
+    int warningDB = 80;
+    int sourceDistance = 5;
 
 
 
     DatabaseReference  databaseReference;
 
-    private static int warningZoneRadSensor1;
+    private static double warningZoneRadSensor1;
 
 
     @Nullable
@@ -68,8 +71,8 @@ public class GPS_Service extends Service {
                 double db = Double.parseDouble(dataSnapshot.child("CITY1LOC1")
                         .child("reading").getValue().toString());
 
-                dangerZoneRadSensor1 = Calculator.calcDangerRad(db, 20);
-                warningZoneRadSensor1 = Calculator.calcWarningRad(db,20);
+                dangerZoneRadSensor1 = Calculator.getDistance(db,highdb,sourceDistance);
+                warningZoneRadSensor1 = Calculator.getDistance(db, warningDB,sourceDistance);
                 LatLng latLng = new LatLng(sorceLati,sourceLongti);
             }
 
@@ -113,8 +116,8 @@ public class GPS_Service extends Service {
                 double db = Double.parseDouble(dataSnapshot.child("CITY1LOC1")
                         .child("reading").getValue().toString());
 
-                dangerZoneRadSensor1 = Calculator.calcDangerRad(db, 8);
-                warningZoneRadSensor1 = Calculator.calcWarningRad(db,8);
+                dangerZoneRadSensor1 = Calculator.getDistance(db,highdb,sourceDistance);
+                warningZoneRadSensor1 = Calculator.getDistance(db, warningDB,sourceDistance);
                 LatLng latLng = new LatLng(sorceLati,sourceLongti);
             }
 

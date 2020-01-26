@@ -48,7 +48,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public static final double sensor1Lati = 7.095764;
     public static final double sensor2Longi = 80.111980;
-    public static int dangerZoneRadSensor1 , warningZoneRadSensor1 ;
+    public static double dangerZoneRadSensor1 , warningZoneRadSensor1 ;
     private static final int NOTIFICATION_ID = 101;
 
     private BroadcastReceiver broadcastReceiver;
@@ -56,8 +56,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     GoogleMap map;// this the map we going to edit
 
-
-
+    int highdb =90 ;
+    int warningDB = 80;
+    int sourceDistance = 5;
 
     Location currentLoc;
 
@@ -131,8 +132,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 double db = Double.parseDouble(dataSnapshot.child("CITY1LOC1")
                         .child("reading").getValue().toString());
 
-                dangerZoneRadSensor1 = Calculator.calcDangerRad(db, 20);
-                warningZoneRadSensor1 = Calculator.calcWarningRad(db,20);
+                dangerZoneRadSensor1 = Calculator.getDistance(db,highdb,sourceDistance);
+                warningZoneRadSensor1 = Calculator.getDistance(db, warningDB,sourceDistance);
             }
 
             @Override
@@ -269,14 +270,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 double db = Double.parseDouble(dataSnapshot.child("CITY1LOC1")
                         .child("reading").getValue().toString());
 
-                dangerZoneRadSensor1 = Calculator.calcDangerRad(db, 8);
-                warningZoneRadSensor1 = Calculator.calcWarningRad(db,8);
+                dangerZoneRadSensor1 = Calculator.getDistance(db,highdb,sourceDistance);
+                warningZoneRadSensor1 = Calculator.getDistance(db, warningDB,sourceDistance);
                 LatLng latLng = new LatLng(sorceLati,sourceLongti);
                 dangerMarkerSensor1 = map.addMarker(new MarkerOptions().position(latLng).title("Sensor 1 is here"));// added into
                 dangerMarkerSensor1.showInfoWindow();//to display tag always
-                dangerCircleSensor1 = map.addCircle(getCircleOption(latLng,dangerZoneRadSensor1,Color.RED));//draw the circle on map added
+                Log.d(TAG, "onDataChange: dangerZoneRadSensor1" +(int) dangerZoneRadSensor1 );
+                dangerCircleSensor1 = map.addCircle(getCircleOption(latLng,(int) dangerZoneRadSensor1,Color.RED));//draw the circle on map added
                 // into Circle object
-                warningCircleSensor1 = map.addCircle(getCircleOption(latLng,warningZoneRadSensor1,Color.GREEN));
+                warningCircleSensor1 = map.addCircle(getCircleOption(latLng,(int)warningZoneRadSensor1,Color.GREEN));
                 /*for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
                     String sensor = postSnapshot.getKey().toLowerCase().trim();//it give the sensor name
                     //we have to handle the cases for all sensors in our list

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="notificationId">1</integer>
+    <integer name="sourceDistance">5</integer>
+    <integer name="highDB"> 90 </integer>
+    <integer name="warningDB"> 80 </integer>
 </resources>
