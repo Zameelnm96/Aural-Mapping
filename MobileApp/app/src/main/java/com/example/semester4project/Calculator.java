@@ -33,4 +33,10 @@ public class Calculator {
         double[] location = {Double.parseDouble(locaionString[0]),Double.parseDouble( locaionString[1])};
         return location;
     }
+
+    //calculate safe distance for safe value
+    public static double getDistance(double db,double safeDB , double sourceDist){
+        return sourceDist*(Math.pow(2,(db-safeDB)/6));
+    }
+
 }

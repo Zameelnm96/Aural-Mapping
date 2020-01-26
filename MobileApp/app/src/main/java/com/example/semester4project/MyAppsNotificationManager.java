@@ -102,7 +102,7 @@ class MyAppsNotificationManager {
                 .setChannelId(channelId)
                 .setAutoCancel(true);
 
-        Bitmap androidImage = BitmapFactory.decodeResource(context.getResources(), R.mipmap.big_pic);
+        Bitmap androidImage = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
         builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(androidImage).setBigContentTitle(bigpictureString));
         notificationManager.notify(notificationId, builder.build());
     }

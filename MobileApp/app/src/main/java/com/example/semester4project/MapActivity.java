@@ -275,7 +275,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         dangerMarkerSensor1 = map.addMarker(new MarkerOptions().position(latLng).title("Sensor 1 is here"));// added into
                         dangerMarkerSensor1.showInfoWindow();//to display tag always
                         // Marker object
-                        int dangerRadius = ((Long)postSnapshot.child("dangerRadius").getValue()).intValue();//radius is in long we haveto
+                        int dangerRadius = (int) Calculator.getDistance(110,80,5);//radius is in long we haveto
                         // convert it into int
                         int warningRadius = ((Long)postSnapshot.child("warningRadius").getValue()).intValue();
                         dangerZoneRadSensor1 = dangerRadius;
@@ -372,31 +372,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             unregisterReceiver(broadcastReceiver);
         }
     }
-  /*  NotificationManagerCompat notificationManagerCompat;
-    Notification notification;*/
-/*    private void addNotification() {
-        // create the notification
-        Notification.Builder m_notificationBuilder = new Notification.Builder(this)
-                .setContentTitle("GPS_Service")
-                .setContentText("service_status_monitor")
-                .setSmallIcon(R.drawable.notification_small_icon);
 
-        // create the pending intent and add to the notification
-        Intent intent = new Intent(this, GPS_Service.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        m_notificationBuilder.setContentIntent(pendingIntent);
-
-        notification =  m_notificationBuilder.build();
-        // send the notification
-        notificationManagerCompat.notify(NOTIFICATION_ID, m_notificationBuilder.build());
-
-    }
-    public void cancelNotification(int id, String tag)
-    {
-        //you can get notificationManager like this:
-        //notificationManage r= (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManagerCompat.cancel(tag, id);
-    }*/
 
     // earlier here had method call isLocationEnabled() now it in Main Activity.
 }
